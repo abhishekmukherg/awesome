@@ -4,12 +4,14 @@ local awful = require("awful")
 awful.rules = require("awful.rules")
 require("awful.autofocus")
 -- Widget and layout library
+local vicious = require("vicious")
 local wibox = require("wibox")
 -- Theme handling library
 local beautiful = require("beautiful")
 -- Notification library
 local naughty = require("naughty")
 local menubar = require("menubar")
+local lain = require("lain")
 
 -- {{{ Error handling
 -- Check if awesome encountered an error during startup and fell back to
@@ -38,7 +40,7 @@ end
 
 -- {{{ Variable definitions
 -- Themes define colours, icons, font and wallpapers.
-beautiful.init("/usr/local/share/awesome/themes/default/theme.lua")
+beautiful.init(awful.util.getdir("config") .. "/themes/default/theme.lua")
 
 -- This is used later as the default terminal and editor to run.
 -- terminal = "gnome-terminal"
@@ -58,10 +60,11 @@ local layouts =
 {
     awful.layout.suit.tile,
     awful.layout.suit.tile.left,
-    awful.layout.suit.tile.bottom,
-    awful.layout.suit.tile.top,
+    lain.layout.termfair,
     awful.layout.suit.floating,
 }
+lain.layout.termfair.nmaster = 3
+lain.layout.termfair.ncol = 1
 -- }}}
 
 -- {{{ Wallpaper
@@ -112,11 +115,27 @@ awesome.quit = function()
     end
 end
 -- }}}
+--
+-- {{{ Vicious widgets
+memwidget = wibox.widget.textbox()
+vicious.cache(vicious.widgets.mem)
+vicious.register(memwidget, vicious.widgets.mem,
+    function(widget, args)
+        return string.format(" %2d%% (%dG / %dG) ", args[1], args[2] / 1000, args[3] / 1000)
+    end, 13)
 
+cpuwidget = awful.widget.graph()
+cpuwidget:set_width(50)
+cpuwidget:set_background_color("#494B4F")
+cpuwidget:set_color("#FF5656")
+cpuwidget:set_color("linear:0,0:8,14:0,#FF5656:0.5,#88A175:1,#AECF96")
+vicious.register(cpuwidget, vicious.widgets.cpu, "$1", 3)
+-- }}}
 
 -- {{{ Wibox
 -- Create a textclock widget
-mytextclock = awful.widget.textclock("%a %b %d, %I:%M")
+mytextclock = wibox.widget.textbox()
+vicious.register(mytextclock, vicious.widgets.date, " %a %b %d, %I:%M ", 60, -10800)
 
 -- Create a wibox for each screen and add it
 mywibox = {}
@@ -197,6 +216,8 @@ for s = 1, screen.count() do
     -- Widgets that are aligned to the right
     local right_layout = wibox.layout.fixed.horizontal()
     if s == 1 then right_layout:add(wibox.widget.systray()) end
+    right_layout:add(cpuwidget)
+    right_layout:add(memwidget)
     right_layout:add(mytextclock)
     right_layout:add(mylayoutbox[s])
 
