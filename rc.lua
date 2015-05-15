@@ -115,6 +115,12 @@ awesome.quit = function()
     end
 end
 -- }}}
+-- {{{ Base widgets
+spacer = wibox.widget.textbox()
+spacer:set_text(" ")
+separator = wibox.widget.textbox()
+separator:set_markup("<tt>|</tt>")
+-- }}}
 --
 -- {{{ Vicious widgets
 memwidget = wibox.widget.textbox()
@@ -216,7 +222,11 @@ for s = 1, screen.count() do
     -- Widgets that are aligned to the right
     local right_layout = wibox.layout.fixed.horizontal()
     if s == 1 then right_layout:add(wibox.widget.systray()) end
+    right_layout:add(spacer)
+    -- right_layout:add(diowidget)
+    right_layout:add(spacer)
     right_layout:add(cpuwidget)
+    right_layout:add(spacer)
     right_layout:add(memwidget)
     right_layout:add(mytextclock)
     right_layout:add(mylayoutbox[s])
